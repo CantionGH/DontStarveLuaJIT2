@@ -319,8 +319,11 @@ static bool install_posix_startup_hook() {
         gum_initialized = true;
     }
     auto interceptor = InjectorCtx::instance()->GetGumInterceptor();
-    ds::gum::replace_fast(interceptor, api, (void *) &chdir_hook, (void **) &origin);
-    if (!origin) {
+    // The fast hook cannot relocate some glibc chdir implementations. Use the
+    // regular interceptor for this one-time POSIX startup hook.
+    const auto result = ds::gum::replace(interceptor, api, (void *) &chdir_hook, (void **) &origin);
+    if (result != GUM_REPLACE_OK || !origin) {
+        std::fprintf(stderr, "[ds-bootstrap] chdir hook failed: result=%d\n", static_cast<int>(result));
         posix_startup_hook_installed = false;
         return false;
     }

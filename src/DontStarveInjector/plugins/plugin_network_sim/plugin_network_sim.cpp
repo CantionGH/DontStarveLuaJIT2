@@ -92,10 +92,12 @@ DS_PLUGIN_MODULE_EXPORT bool ds_plugin_module_init(ds::plugin::PluginHost *host)
         return false;
     }
 
-        (void) host->register_game_injector_export("DS_LUAJIT_net_sim_enable", &DS_LUAJIT_net_sim_enable);
+#ifdef _WIN32
+    (void) host->register_game_injector_export("DS_LUAJIT_net_sim_enable", &DS_LUAJIT_net_sim_enable);
     (void) host->register_game_injector_export("DS_LUAJIT_net_sim_set", &DS_LUAJIT_net_sim_set);
     (void) host->register_game_injector_export("DS_LUAJIT_net_sim_update", &DS_LUAJIT_net_sim_update);
     (void) host->register_game_injector_export("DS_LUAJIT_net_sim_get_stats", &DS_LUAJIT_net_sim_get_stats);
+#endif
     host->register_plugin(&g_network_sim);
     std::fprintf(stderr, "[plugin_network_sim] module init registered network.sim\n");
     return true;

@@ -69,13 +69,14 @@ if (WIN32)
     find_package(pe-parse CONFIG REQUIRED)
     target_link_libraries(nucleus_static PRIVATE pe-parse::pe-parse)
 else()
-    # Keep stock BFD loader when available; otherwise allow raw-only builds.
+    # Signature generation requires the ELF loader, not a raw-only build.
     find_library(BFD_LIBRARY NAMES bfd bfd-multiarch)
-    if (BFD_LIBRARY)
+    find_path(BFD_INCLUDE_DIR NAMES bfd.h)
+    if (BFD_LIBRARY AND BFD_INCLUDE_DIR)
+        target_include_directories(nucleus_static PRIVATE ${BFD_INCLUDE_DIR})
         target_link_libraries(nucleus_static PRIVATE ${BFD_LIBRARY})
     else()
-        message(WARNING "nucleus_static: libbfd not found; non-raw load will fail")
-        target_compile_definitions(nucleus_static PRIVATE NUCLEUS_LOADER_NO_BFD=1)
+        message(FATAL_ERROR "nucleus_static: libbfd and bfd.h are required for ELF signatures (binutils-dev)")
     endif()
 endif()
 

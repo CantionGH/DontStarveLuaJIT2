@@ -111,15 +111,22 @@ local function load_package(stem)
     return R.load_package(stem, api)
 end
 
-return {
+local plugins = {
     load_flat("jit_tailcall"),
     load_package("plugin_debug_profiler"),
     load_package("plugin_network_rpc"),
     load_flat("network_entity"),
     load_package("plugin_fps_render"),
-    load_package("plugin_render_shadow"),
     load_package("plugin_save_fork"),
     load_package("plugin_sim_lagcomp"),
     load_package("plugin_network_sim"),
     load_flat("jit_runtime"),
 }
+
+-- CMake only packages render.shadow on Windows. Do not try to open its
+-- modinfo.lua on Linux/macOS before the host has a chance to apply gates.
+local is_win32 = rawget(_G, "IsWin32")
+if type(is_win32) ~= "function" or is_win32() then
+    table.insert(plugins, 6, load_package("plugin_render_shadow"))
+end
+return plugins

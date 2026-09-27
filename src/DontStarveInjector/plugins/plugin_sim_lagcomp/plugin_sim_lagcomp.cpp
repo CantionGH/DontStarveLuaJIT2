@@ -91,7 +91,9 @@ DS_PLUGIN_MODULE_EXPORT bool ds_plugin_module_init(ds::plugin::PluginHost *host)
         return false;
     }
 
-        (void) host->register_game_injector_export("DS_LUAJIT_entity_get_raw_ptr", &DS_LUAJIT_entity_get_raw_ptr);
+#ifdef _WIN32
+    (void) host->register_game_injector_export("DS_LUAJIT_entity_get_raw_ptr", &DS_LUAJIT_entity_get_raw_ptr);
+#endif
     host->register_plugin(&g_sim_lagcomp);
     std::fprintf(stderr, "[plugin_sim_lagcomp] module init registered sim.lagcomp\n");
     return true;

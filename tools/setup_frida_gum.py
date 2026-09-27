@@ -260,7 +260,8 @@ def meson_build_static(src: Path, build_dir: Path, prefix: Path, version: str) -
             ],
             cwd=src,
         )
-        run(["make", f"-j{os.cpu_count() or 4}"], cwd=src)
+        jobs = int(os.environ.get("CMAKE_BUILD_PARALLEL_LEVEL", min(os.cpu_count() or 4, 2)))
+        run(["make", f"-j{max(jobs, 1)}"], cwd=src)
         run(["make", "install"], cwd=src)
 
     return _find_static_artifacts([prefix, build_dir, src / "build", src])
@@ -413,6 +414,7 @@ def link_shell_posix(static_lib: Path, header: Path, stage: Path) -> None:
             "-Wl,--whole-archive",
             str(static_lib),
             "-Wl,--no-whole-archive",
+            "-Wl,-z,noexecstack",
             "-lpthread",
             "-ldl",
             "-lm",
@@ -684,6 +686,9 @@ def main() -> int:
     if not args.skip_meson:
         ensure_source(src, args.version)
     configure_flags = "default_library=static;devkits=gum;shell=def"
+    if platform.system() == "Linux":
+        # Do not reuse a shared shell staged before the noexecstack fix.
+        configure_flags += ";shell_ldflags=-z,noexecstack"
     fp_src = src if src.is_dir() else DEFAULT_SOURCE
 
     # Resolve skip inputs early so fingerprint can include static identity.

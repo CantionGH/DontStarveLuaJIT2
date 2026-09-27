@@ -11,6 +11,10 @@ target_compile_definitions(plugin_debug_profiler PRIVATE
     SPDLOG_COMPILED_LIB
     SPDLOG_FMT_EXTERNAL
     DS_INJECTOR_CONSUMER=1)
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Match the packaged Tracy runtime built with TRACY_TIMER_FALLBACK=ON.
+    target_compile_definitions(plugin_debug_profiler PRIVATE TRACY_TIMER_FALLBACK)
+endif()
 target_include_directories(plugin_debug_profiler PRIVATE
     ${DONTSTARVEINJECTOR_ROOT}
     ${DONTSTARVEINJECTOR_ROOT}/plugins/plugin_core_vm

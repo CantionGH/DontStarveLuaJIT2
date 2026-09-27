@@ -837,4 +837,9 @@ env.require = function(modulename)
 	return _require(modulename)
 end
 _G.setfenv(env.require, new_env)
-main()
+local ok, err = _G.xpcall(main, function(err)
+	local trace = _G.debug.traceback(_G.tostring(err), 2)
+	_G.print("[luajit] initialization failed: " .. trace)
+	return trace
+end)
+if not ok then _G.error(err) end
